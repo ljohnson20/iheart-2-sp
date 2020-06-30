@@ -151,5 +151,5 @@ gen
 
 # Other
 config.py
-testing.py
 .cache-*
+playlist_cont_*.txt

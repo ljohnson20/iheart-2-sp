@@ -2,6 +2,7 @@ import config
 import datetime as dt
 import spotipy
 import spotipy.util as util
+import os
 
 # Spotify API set up
 username = config.spotify_username
@@ -34,9 +35,23 @@ def clear_playlist():
     with open(f'playlist_cont_{dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.txt', 'w') as f:
         for track_id in playlist_cont:
             f.write(f"{track_id}\n")
-            sp.user_playlist_remove_all_occurrences_of_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
+            sp.user_playlist_remove_all_occurrences_of_tracks(user=username, playlist_id=playlist_id, tracks=[track_id])
+
+    return 0
 
 
+def read_playlist_file(file: str):
+    if os.path.isfile(file) and os.path.exists(file):
+        with open(file, 'r') as f:
+            for track_id in f.readlines():
+                add_track(track_id)
+
+        return 0
+    else:
+        return 1
+
+
+# TODO - May need to account for songs with remix in name
 def search_spotify(artist: str, track: str):
     auth = util.prompt_for_user_token(username, scope, token, secret, uri)
     sp = spotipy.Spotify(auth=auth)
@@ -45,9 +60,9 @@ def search_spotify(artist: str, track: str):
     return results
 
 
-def add_track(track_id: str):
+def add_track(track_id: list):
     auth = util.prompt_for_user_token(username, scope, token, secret, uri)
     sp = spotipy.Spotify(auth=auth)
 
-    sp.user_playlist_add_tracks(username, playlist_id, track_id)
-    return True
+    sp.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
+    return 0

@@ -53,19 +53,29 @@ playlist_cont = []
 
 # https://developer.spotify.com/documentation/web-api/reference/
 
+# TODO - Better logging with date in file and different levels via cmd arguments
 # Logs set up
-logging.basicConfig(filename='listener.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='listener.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s',
+                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
 logging.info('Log file for station_listener.py\n\n')
 
+# TODO - Need better try/catch blocks
 try:
     if auth:
         sp = spotipy.Spotify(auth=auth)
         sp.trace = False
 
+        # TODO - Switch url over to new reader
+
         url = config.iheart_url
 
         playlist_cont = spotify.current_playlist_tracks()
 
+        if len(playlist_cont) > 250:
+            spotify.clear_playlist()
+            logging.info('Playlist over 250 songs! Clearing out and starting fresh')
+
+        logging.info('Starting iHeart Radio listener')
         while True:
             auth = util.prompt_for_user_token(username, scope, token, secret, uri)
             sp = spotipy.Spotify(auth=auth)
@@ -73,39 +83,45 @@ try:
             track_ids.clear()
             r = requests.get(url)
             if r.status_code == 200:
-                content = json.loads(r.text)
-                print('iHeartRadio is listening to "' + content['artist'] + '" - ' + content['title'])
-                track = clean_string(content['title'])
-                artist = clean_string(content['artist'], False)
+                artist = None
+                track = None
+                item = None
 
-                results = spotify.search_spotify(artist, track)
-                # print(results)
-                if results['tracks']['total'] == 0:
-                    logging.warning(f'FAILED SPOTIFY SEARCH = artist:{artist} track:{track}')
-                    print("No results were found on Spotify")
-                else:
-                    for item in results['tracks']['items']:
-                        artists = []
-                        for players in item['artists']:
-                            artists.append(players['name'])
-                        print('Spotify found "' + item['name'] + '" - ' + ",".join(artists) + '\tID: ' + item['id'])
-                        if item['id'] in playlist_cont:
-                            x = 1
-                            print("Song is already in playlist")
-                            print('--------------------------------------------------------------')
-                        else:
-                            playlist_cont.append(item['id'])
-                            track_ids.append(results['tracks']['items'][0]['id'])
-                            # sp.user_playlist_add_tracks(username, playlist_id, track_ids)
-                            print("Song has been added to the playlist")
+                try:
+                    content = json.loads(r.text)
+                    logging.info('iHeartRadio is listening to "' + content['title'] + '" - ' + content['artist'])
+                    track = clean_string(content['title'])
+                    artist = clean_string(content['artist'], False)
+
+                    results = spotify.search_spotify(artist, track)
+                    # print(results)
+                    if results['tracks']['total'] == 0:
+                        logging.warning(f'FAILED SPOTIFY SEARCH = artist:{artist} track:{track}')
+                    else:
+                        for item in results['tracks']['items']:
+                            artists = []
+                            for players in item['artists']:
+                                artists.append(players['name'])
+                            logging.info('Spotify found "' + item['name'] + '" - ' + ",".join(artists) + '\tID: ' + item['id'])
+                            if item['id'] in playlist_cont:
+                                x = 1
+                                logging.info("Song is already in playlist")
+                                logging.info('--------------------------------------------------------------')
+                            else:
+                                playlist_cont.append(item['id'])
+                                spotify.add_track([item['id']])
+                                logging.info("Song has been added to the playlist")
+                                logging.info('--------------------------------------------------------------')
+                except Exception as e:
+                    logging.warning(f'SPOTIFY SEARCH = artist:{artist} track:{track}')
+                    logging.warning(f"RESULTS = {item}")
+                    logging.exception("Exception occured")
             else:
                 x = 1
-                print('Radio station is currently playing an ad')
-                print('--------------------------------------------------------------')
+                logging.info('Radio station is currently playing an ad')
+                logging.info('--------------------------------------------------------------')
             time.sleep(100)
     else:
         logging.error("Could not get token")
 except Exception as e:
-    logging.debug(f'SPOTIFY SEARCH = artist:{artist} track:{track}')
-    logging.debug(f"RESULTS = {item['id']}")
-    logging.exception("Exception occured")
+    logging.exception("Unexpected Exception occured")
