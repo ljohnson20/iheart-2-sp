@@ -2,6 +2,7 @@
 # Has no duplicates and pushes to spotify daily? maybe hourly?
 # Could also pull from website or list which might be easier
 
+import argparse
 import config
 import re
 import logging
@@ -38,6 +39,14 @@ def api_url_find(iheart_url: str):
     return None
 
 
+# Argument parser set up
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('--url', '-U', type=str, help='Set iHeart radio station url')
+parser.add_argument('--info', '-I', action='store_true', help='Used to set logging to info mode')
+parser.add_argument('--debug', '-D', action='store_true', help='Used to set logging to debug mode')
+
+args = parser.parse_args()
+
 # Spotify API set up
 username = config.spotify_username
 scope = "user-library-read, playlist-modify-public"
@@ -52,11 +61,17 @@ track_ids = []
 playlist_cont = []
 
 # https://developer.spotify.com/documentation/web-api/reference/
-
-# TODO - Better logging with date in file and different levels via cmd arguments
 # Logs set up
-logging.basicConfig(filename='listener.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+if args.debug:
+    logging.basicConfig(filename='listener.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
+else:
+    if args.info:
+        logging.basicConfig(filename='listener.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+    else:
+        logging.basicConfig(filename='listener.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
 logging.info('Log file for station_listener.py\n\n')
 
 # TODO - Need better try/catch blocks
@@ -68,6 +83,8 @@ try:
         # TODO - Switch url over to new reader
 
         url = config.iheart_url
+        if args.url:
+            url = args.url
 
         playlist_cont = spotify.current_playlist_tracks()
 
