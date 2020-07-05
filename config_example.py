@@ -1,7 +1,7 @@
 # Spotify API set up
 spotify_username = "SPOTIFY USERNAME"
 # Below can be created at https://developer.spotify.com/dashboard/login
-spotify_token = "SPOTIFY CLIENT TOKEN"
+spotify_client = "SPOTIFY CLIENT TOKEN"
 spotify_secret = "SPOTIFY SECRET TOKEN"
 spotify_uri = "REDIRECT AUTH URI"
 

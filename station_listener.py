@@ -48,16 +48,25 @@ parser.add_argument('--limit', '-L', type=int, default=250, help='Set upper limi
 args = parser.parse_args()
 
 # TODO - Config set up via GUI or command line options
+# https://github.com/plamere/spotipy/issues/287#issuecomment-576896586
 
 # Spotify API set up
-username = config.spotify_username
 scope = "user-library-read, playlist-modify-public"
-token = config.spotify_token
-secret = config.spotify_secret
-uri = config.spotify_uri
 
-auth = spotipy.util.prompt_for_user_token(username, scope, token, secret, uri)
+oauth = spotipy.oauth2.SpotifyOAuth(username=config.spotify_username, scope=scope,
+                                    client_id=config.spotify_client, client_secret=config.spotify_secret,
+                                    redirect_uri="https://www.google.com/")
+token = oauth.get_cached_token()
+if not token:
+    print(f"Copy/paste following link into a browser if it does not auto-open:\n{oauth.get_authorize_url()}")
+    token = oauth.get_access_token(code=oauth.get_auth_response())
+    print("Also paste redirect url in config under spotify_url")
+else:
+    token = spotipy.util.prompt_for_user_token(username=config.spotify_username, scope=scope,
+                                               client_id=config.spotify_client, client_secret=config.spotify_secret,
+                                               redirect_uri=config.spotify_uri)
 
+# TODO - If playlist id not given create one
 playlist_id = config.spotify_playlist
 playlist_cont = []
 
@@ -81,8 +90,8 @@ logging.info('Log file for station_listener.py\n\n')
 
 # TODO - Need better try/catch blocks
 try:
-    if auth:
-        sp = spotipy.Spotify(auth=auth)
+    if token:
+        sp = spotipy.Spotify(auth=token)
         sp.trace = False
 
         # TODO - Monitor multiple urls at once
@@ -101,8 +110,11 @@ try:
         logging.info('Starting iHeart Radio listener')
         # TODO - What is better while loop or cron tab? Can python edit cron tab?
         while True:
-            auth = spotipy.util.prompt_for_user_token(username, scope, token, secret, uri)
-            sp = spotipy.Spotify(auth=auth)
+            token = spotipy.util.prompt_for_user_token(username=config.spotify_username, scope=scope,
+                                                       client_id=config.spotify_client,
+                                                       client_secret=config.spotify_secret,
+                                                       redirect_uri=config.spotify_uri)
+            sp = spotipy.Spotify(auth=token)
 
             r = requests.get(api_url)
             if r.status_code == 200:
