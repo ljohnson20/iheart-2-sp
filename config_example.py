@@ -9,7 +9,5 @@ spotify_uri = "REDIRECT AUTH URI"
 # It should look something like this "spotify:playlist:37i9dQZEVXbLRQDuF5jeBp"
 spotify_playlist = 'FULL PLAYLIST LINK'
 
-# iHeartRadio station request url
+# iHeartRadio station url - example: "https://www.iheart.com/live/z100-1469/"
 iheart_url = "URL GOES HERE"
-# Found above by watching network tab under developer (F12) for currentTrackMeta and used request URL
-# There might be an easier way to find this

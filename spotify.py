@@ -15,7 +15,7 @@ playlist_id = config.spotify_playlist
 
 
 def current_playlist_tracks():
-    auth = util.prompt_for_user_token(username, scope, token, secret, uri)
+    auth = spotipy.util.prompt_for_user_token(username, scope, token, secret, uri)
     sp = spotipy.Spotify(auth=auth)
     playlist_cont = []
     # Getting current songs in playlist to add to list for no duplicates
@@ -28,7 +28,7 @@ def current_playlist_tracks():
 
 
 def clear_playlist():
-    auth = util.prompt_for_user_token(username, scope, token, secret, uri)
+    auth = spotipy.util.prompt_for_user_token(username, scope, token, secret, uri)
     sp = spotipy.Spotify(auth=auth)
 
     playlist_cont = current_playlist_tracks()
@@ -44,7 +44,7 @@ def read_playlist_file(file: str):
     if os.path.isfile(file) and os.path.exists(file):
         with open(file, 'r') as f:
             for track_id in f.readlines():
-                add_track(track_id)
+                add_track([track_id])
 
         return 0
     else:
@@ -53,15 +53,25 @@ def read_playlist_file(file: str):
 
 # TODO - May need to account for songs with remix in name
 def search_spotify(artist: str, track: str):
-    auth = util.prompt_for_user_token(username, scope, token, secret, uri)
+    auth = spotipy.util.prompt_for_user_token(username, scope, token, secret, uri)
     sp = spotipy.Spotify(auth=auth)
 
-    results = sp.search(q="artist:{} track:{} NOT Live NOT Remix".format(artist, track), type='track', limit=1)
-    return results
+    track_id = None
+    artists = None
+    name = None
+    popularity = None
+
+    results = sp.search(q=f"artist:{artist} track:{track} NOT Live NOT Remix", type='track', limit=1)
+    if results['tracks']['total'] != 0:
+        track_id = results['tracks']['items'][0]['id']
+        artists = results['tracks']['items'][0]['artists']
+        name = results['tracks']['items'][0]['name']
+        popularity = results['tracks']['items'][0]['popularity']
+    return track_id, artists, name, popularity
 
 
 def add_track(track_id: list):
-    auth = util.prompt_for_user_token(username, scope, token, secret, uri)
+    auth = spotipy.util.prompt_for_user_token(username, scope, token, secret, uri)
     sp = spotipy.Spotify(auth=auth)
 
     sp.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
