@@ -1,38 +1,10 @@
 ---
 kind: pipeline
 type: docker
-name: python-2
-
-steps:
-- name: test
-  image: python:2
-  environment:
-    spotify_username:
-      from_secret: spotify_username
-    spotify_client:
-      from_secret: spotify_client
-    spotify_secret:
-      from_secret: spotify_secret
-    spotify_uri:
-      from_secret: spotify_uri
-    iheart_url:
-      from_secret: iheart_url
-    spotify_playlist:
-      spotify_playlist: spotify_playlist
-  commands:
-  - pip install -r requirements.txt
-  - echo hello world
-  when:
-    branch:
-      - master
-
----
-kind: pipeline
-type: docker
 name: python-3-3
 
 steps:
-- name: test
+- name: tests
   image: python:3.3
   environment:
     spotify_username:
@@ -49,7 +21,7 @@ steps:
       spotify_playlist: spotify_playlist
   commands:
   - pip install -r requirements.txt
-  - echo hello world
+  - pytest
   when:
     branch:
       - master
@@ -60,7 +32,7 @@ type: docker
 name: python-3-4
 
 steps:
-- name: test
+- name: tests
   image: python:3.4
   environment:
     spotify_username:
@@ -77,7 +49,58 @@ steps:
       spotify_playlist: spotify_playlist
   commands:
   - pip install -r requirements.txt
-  - echo hello world
+  - pytest
   when:
     branch:
     - master
+
+---
+kind: pipeline
+type: docker
+name: python-3-8
+
+steps:
+- name: tests
+  image: python:3.8
+  environment:
+    spotify_username:
+      from_secret: spotify_username
+    spotify_client:
+      from_secret: spotify_client
+    spotify_secret:
+      from_secret: spotify_secret
+    spotify_uri:
+      from_secret: spotify_uri
+    iheart_url:
+      from_secret: iheart_url
+    spotify_playlist:
+      spotify_playlist: spotify_playlist
+  commands:
+  - pip install -r requirements.txt
+  - pytest
+  when:
+    branch:
+    - master
+
+---
+kind: pipeline
+type: docker
+name: repo-update
+
+steps:
+- name: ssh commands
+  image: appleboy/drone-ssh
+  settings:
+    host:
+      from_secret: host
+    username:
+      from_secret: ssh_username
+    password:
+      from_secret: ssh_password
+    port:
+      from_secret: port
+    script:
+      - bash updatePythonRepo.sh iheart-2-sp
+  when:
+    branch:
+      - master

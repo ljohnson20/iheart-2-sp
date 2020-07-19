@@ -4,43 +4,17 @@
 
 import argparse
 import config
-import re
 import logging
 import os
 import time
 import requests
-import spotify
+import helper
 import spotipy
 import json
 
 
-# Used for doctering up the track and artist name for searching
-def clean_string(string: str, remove_extra: bool = True):
-    removal = ['the', 'feat', 'feat.', 'featuring']
-    if remove_extra:
-        temp = re.sub('[  ]+', ' ', re.sub('[^A-Za-z0-9$ñ& -]+', '', string.lower()))
-    else:
-        temp = re.sub('[  ]+', ' ', re.sub('[^A-Za-z0-9$ñ\. -]+', '', string.lower()))
-    temp = temp.split()
-    fixed = [word for word in temp if word not in removal]
-    doctored = ' '.join(fixed)
-    return doctored
-
-
-# Used to get api url from base iHeart Radio station url
-def api_url_find(iheart_url: str):
-    main = requests.get(iheart_url)
-    split = main.text[main.text.find("@id"):main.text.find("@type", main.text.find("@id"))].split('"')[2].split("/")
-    if len(split) != 0:
-        live = split[2].split("/")
-        if len(live) != 0:
-            api_url = "https://us.api.iheart.com/api/v3/live-meta/stream/" + live[-1] + "/currentTrackMeta"
-            return api_url
-    return None
-
-
 # Argument parser set up
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser(description='Set url, playlist limit, and logging level of iheart radio listener')
 parser.add_argument('--url', '-U', type=str, help='Set iHeart radio station url defaults to config file')
 parser.add_argument('--info', '-I', action='store_true', help='Used to set logging to info mode')
 parser.add_argument('--debug', '-D', action='store_true', help='Used to set logging to debug mode')
@@ -51,27 +25,37 @@ args = parser.parse_args()
 # TODO - Config set up via GUI or command line options
 # https://github.com/plamere/spotipy/issues/287#issuecomment-576896586
 
-# Spotify API set up
+# Variable set up
 scope = "user-library-read, playlist-modify-public"
+if "spotify_username" and "spotify_client" and "spotify_secret" and "spotify_uri" in os.environ:
+    username = os.environ.get(spotify_username)
+    client = os.environ.get(spotify_client)
+    secret = os.environ.get(spotify_secret)
+    uri = os.environ.get(spotify_uri)
+else:
+    username = config.spotify_username
+    client = config.spotify_client
+    secret = config.spotify_secret
+    uri = config.spotify_uri
 
-oauth = spotipy.oauth2.SpotifyOAuth(username=os.environ.get(spotify_username), scope=scope,
-                                    client_id=os.environ.get(spotify_client),
-                                    client_secret=os.environ.get(spotify_secret),
-                                    redirect_uri="https://www.google.com/")
+# TODO - Swap config id to variable in functions to avoid mix up
+# TODO - Fix Spotify token generation. Maybe also pass through function?
+# TODO - If playlist id not given create one
+if "spotify_playlist" in os.environ:
+    playlist_id = os.environ.get(spotify_playlist)
+else:
+    playlist_id = config.spotify_playlist
+playlist_cont = []
+
+# Spotify API set up
+oauth = spotipy.oauth2.SpotifyOAuth(username, scope, client, secret, "https://www.google.com/")
 token = oauth.get_cached_token()
 if not token:
     print(f"Copy/paste following link into a browser if it does not auto-open:\n{oauth.get_authorize_url()}")
     token = oauth.get_access_token(code=oauth.get_auth_response())
     print("Also paste redirect url in config under spotify_url")
 else:
-    token = spotipy.util.prompt_for_user_token(username=os.environ.get(spotify_username), scope=scope,
-                                               client_id=os.environ.get(spotify_client),
-                                               client_secret=os.environ.get(spotify_secret),
-                                               redirect_uri=os.environ.get(spotify_uri))
-
-# TODO - If playlist id not given create one
-playlist_id = os.environ.get(spotify_playlist)
-playlist_cont = []
+    token = spotipy.util.prompt_for_user_token(username, scope, client, secret, spotify_uri)
 
 # https://developer.spotify.com/documentation/web-api/reference/
 
@@ -94,6 +78,7 @@ logging.info('Log file for station_listener.py\n\n')
 # TODO - Need better try/catch blocks
 try:
     if token:
+        logging.info('Recieved valid Spotify token')
         sp = spotipy.Spotify(auth=token)
         sp.trace = False
 
@@ -102,21 +87,18 @@ try:
         if args.url:
             url = args.url
 
-        api_url = api_url_find(url)
+        api_url = helper.api_url_find(url)
 
-        playlist_cont = spotify.current_playlist_tracks()
+        playlist_cont = helper.current_playlist_tracks()
 
         if len(playlist_cont) > args.limit > 0:
-            spotify.clear_playlist()
+            helper.clear_playlist()
             logging.warning(f'Playlist over {args.limit} songs! Clearing out and starting fresh')
 
         logging.info('Starting iHeart Radio listener')
         # TODO - What is better while loop or cron tab? Can python edit cron tab?
         while True:
-            token = spotipy.util.prompt_for_user_token(username=os.environ.get(spotify_username), scope=scope,
-                                                       client_id=os.environ.get(spotify_client),
-                                                       client_secret=os.environ.get(spotify_secret),
-                                                       redirect_uri=os.environ.get(spotify_uri))
+            token = spotipy.util.prompt_for_user_token(username, scope, client, secret, spotify_uri)
             sp = spotipy.Spotify(auth=token)
 
             r = requests.get(api_url)
@@ -128,10 +110,10 @@ try:
                 try:
                     content = json.loads(r.text)
                     logging.info(f"iHeartRadio is listening to \"{content['title']}\" - {content['artist']}")
-                    track = clean_string(content['title'])
-                    artist = clean_string(content['artist'], False)
+                    track = helper.clean_string(content['title'])
+                    artist = helper.clean_string(content['artist'], False)
 
-                    track_id, artists, name, popularity = spotify.search_spotify(artist, track)
+                    track_id, artists, name, popularity = helper.search_spotify(artist, track)
 
                     if not track_id:
                         logging.warning(f"FAILED SPOTIFY SEARCH = Artist:{artist} Track:{track}")
@@ -146,7 +128,7 @@ try:
                             logging.info("--------------------------------------------------------------")
                         else:
                             playlist_cont.append(track_id)
-                            spotify.add_track([track_id])
+                            helper.add_track([track_id])
                             logging.info("Song has been added to the playlist")
                             logging.info("--------------------------------------------------------------")
                 except Exception as e:

@@ -1,4 +1,4 @@
-# Swapped to environmental variables
+# Can use either environmental variables or config file
 
 # Spotify API set up
 spotify_username = "SPOTIFY USERNAME"
