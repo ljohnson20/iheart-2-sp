@@ -22,9 +22,12 @@ steps:
   commands:
   - pip install -r requirements.txt
   - pytest
-  when:
-    branch:
-      - master
+
+trigger:
+  branch:
+    - master
+  event:
+    - push
 
 ---
 kind: pipeline
@@ -50,9 +53,12 @@ steps:
   commands:
   - pip install -r requirements.txt
   - pytest
-  when:
-    branch:
+
+trigger:
+  branch:
     - master
+  event:
+    - push
 
 ---
 kind: pipeline
@@ -78,9 +84,12 @@ steps:
   commands:
   - pip install -r requirements.txt
   - pytest
-  when:
-    branch:
+
+trigger:
+  branch:
     - master
+  event:
+    - push
 
 ---
 kind: pipeline
