@@ -6,6 +6,7 @@ import argparse
 import config
 import re
 import logging
+import os
 import time
 import requests
 import spotify
@@ -53,8 +54,9 @@ args = parser.parse_args()
 # Spotify API set up
 scope = "user-library-read, playlist-modify-public"
 
-oauth = spotipy.oauth2.SpotifyOAuth(username=config.spotify_username, scope=scope,
-                                    client_id=config.spotify_client, client_secret=config.spotify_secret,
+oauth = spotipy.oauth2.SpotifyOAuth(username=os.environ.get(spotify_username), scope=scope,
+                                    client_id=os.environ.get(spotify_client),
+                                    client_secret=os.environ.get(spotify_secret),
                                     redirect_uri="https://www.google.com/")
 token = oauth.get_cached_token()
 if not token:
@@ -62,12 +64,13 @@ if not token:
     token = oauth.get_access_token(code=oauth.get_auth_response())
     print("Also paste redirect url in config under spotify_url")
 else:
-    token = spotipy.util.prompt_for_user_token(username=config.spotify_username, scope=scope,
-                                               client_id=config.spotify_client, client_secret=config.spotify_secret,
-                                               redirect_uri=config.spotify_uri)
+    token = spotipy.util.prompt_for_user_token(username=os.environ.get(spotify_username), scope=scope,
+                                               client_id=os.environ.get(spotify_client),
+                                               client_secret=os.environ.get(spotify_secret),
+                                               redirect_uri=os.environ.get(spotify_uri))
 
 # TODO - If playlist id not given create one
-playlist_id = config.spotify_playlist
+playlist_id = os.environ.get(spotify_playlist)
 playlist_cont = []
 
 # https://developer.spotify.com/documentation/web-api/reference/
@@ -94,8 +97,8 @@ try:
         sp = spotipy.Spotify(auth=token)
         sp.trace = False
 
-        # TODO - Monitor multiple urls at once
-        url = config.iheart_url
+        # TODO - Monitor multiple urls at once?
+        url = os.environ.get('iheart_url')
         if args.url:
             url = args.url
 
@@ -110,10 +113,10 @@ try:
         logging.info('Starting iHeart Radio listener')
         # TODO - What is better while loop or cron tab? Can python edit cron tab?
         while True:
-            token = spotipy.util.prompt_for_user_token(username=config.spotify_username, scope=scope,
-                                                       client_id=config.spotify_client,
-                                                       client_secret=config.spotify_secret,
-                                                       redirect_uri=config.spotify_uri)
+            token = spotipy.util.prompt_for_user_token(username=os.environ.get(spotify_username), scope=scope,
+                                                       client_id=os.environ.get(spotify_client),
+                                                       client_secret=os.environ.get(spotify_secret),
+                                                       redirect_uri=os.environ.get(spotify_uri))
             sp = spotipy.Spotify(auth=token)
 
             r = requests.get(api_url)

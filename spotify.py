@@ -5,15 +5,15 @@ import spotipy.util as util
 import os
 
 # Spotify API set up
-username = config.spotify_username
+username = os.environ.get(spotify_username)
 scope = "user-library-read, playlist-modify-public"
-client = config.spotify_client
-secret = config.spotify_secret
-uri = config.spotify_uri
+client = os.environ.get(spotify_client)
+secret = os.environ.get(spotify_secret)
+uri = os.environ.get(spotify_uri)
 
 # TODO - Swap config id to variable in functions to avoid mix up
 # TODO - Fix Spotify token generation. Maybe also pass through function?
-playlist_id = config.spotify_playlist
+playlist_id = os.environ.get(spotify_playlist)
 
 
 def current_playlist_tracks():
@@ -78,3 +78,6 @@ def add_track(track_id: list):
 
     sp.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
     return 0
+
+# TODO - Need to remove duplicates using fuzzy string match
+# TODO - Remove unpopular songs

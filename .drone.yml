@@ -1,0 +1,83 @@
+---
+kind: pipeline
+type: docker
+name: python-2
+
+steps:
+- name: test
+  image: python:2
+  environment:
+    spotify_username:
+      from_secret: spotify_username
+    spotify_client:
+      from_secret: spotify_client
+    spotify_secret:
+      from_secret: spotify_secret
+    spotify_uri:
+      from_secret: spotify_uri
+    iheart_url:
+      from_secret: iheart_url
+    spotify_playlist:
+      spotify_playlist: spotify_playlist
+  commands:
+  - pip install -r requirements.txt
+  - echo hello world
+  when:
+    branch:
+      - master
+
+---
+kind: pipeline
+type: docker
+name: python-3-3
+
+steps:
+- name: test
+  image: python:3.3
+  environment:
+    spotify_username:
+      from_secret: spotify_username
+    spotify_client:
+      from_secret: spotify_client
+    spotify_secret:
+      from_secret: spotify_secret
+    spotify_uri:
+      from_secret: spotify_uri
+    iheart_url:
+      from_secret: iheart_url
+    spotify_playlist:
+      spotify_playlist: spotify_playlist
+  commands:
+  - pip install -r requirements.txt
+  - echo hello world
+  when:
+    branch:
+      - master
+
+---
+kind: pipeline
+type: docker
+name: python-3-4
+
+steps:
+- name: test
+  image: python:3.4
+  environment:
+    spotify_username:
+      from_secret: spotify_username
+    spotify_client:
+      from_secret: spotify_client
+    spotify_secret:
+      from_secret: spotify_secret
+    spotify_uri:
+      from_secret: spotify_uri
+    iheart_url:
+      from_secret: iheart_url
+    spotify_playlist:
+      spotify_playlist: spotify_playlist
+  commands:
+  - pip install -r requirements.txt
+  - echo hello world
+  when:
+    branch:
+    - master

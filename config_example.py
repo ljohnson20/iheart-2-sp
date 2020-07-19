@@ -1,3 +1,5 @@
+# Swapped to environmental variables
+
 # Spotify API set up
 spotify_username = "SPOTIFY USERNAME"
 # Below can be created at https://developer.spotify.com/dashboard/login
