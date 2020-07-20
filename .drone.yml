@@ -11,7 +11,7 @@ steps:
     path: /tmp/cache
   commands:
   - pip install -r requirements.txt
-  - cp /tmp/cache/test-config.py /drone/src/
+  - cp /tmp/cache/test-config.py /drone/src/config.py
   - pytest
 
 volumes:
@@ -38,7 +38,7 @@ steps:
     path: /tmp/cache
   commands:
   - pip install -r requirements.txt
-  - cp /tmp/cache/test-config.py /drone/src/
+  - cp /tmp/cache/test-config.py /drone/src/config.py
   - pytest
 
 volumes:
@@ -65,7 +65,7 @@ steps:
     path: /tmp/cache
   commands:
   - pip install -r requirements.txt
-  - cp /tmp/cache/test-config.py /drone/src/
+  - cp /tmp/cache/test-config.py /drone/src/config.py
   - pytest
 
 volumes:
