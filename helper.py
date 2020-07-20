@@ -1,3 +1,4 @@
+import config
 import datetime as dt
 import re
 import requests
@@ -13,7 +14,6 @@ if "spotify_username" and "spotify_client" and "spotify_secret" and "spotify_uri
     secret = os.environ.get(spotify_secret)
     uri = os.environ.get(spotify_uri)
 else:
-    import config
     username = config.spotify_username
     client = config.spotify_client
     secret = config.spotify_secret
