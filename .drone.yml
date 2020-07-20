@@ -5,7 +5,7 @@ name: python-3-3
 
 steps:
 - name: tests
-  image: python:3.3
+  image: python:3.6
   environment:
     spotify_username:
       from_secret: spotify_username
@@ -36,7 +36,7 @@ name: python-3-4
 
 steps:
 - name: tests
-  image: python:3.4
+  image: python:3.7
   environment:
     spotify_username:
       from_secret: spotify_username
@@ -91,25 +91,25 @@ trigger:
   event:
     - push
 
----
-kind: pipeline
-type: docker
-name: repo-update
-
-steps:
-- name: ssh commands
-  image: appleboy/drone-ssh
-  settings:
-    host:
-      from_secret: host
-    username:
-      from_secret: ssh_username
-    password:
-      from_secret: ssh_password
-    port:
-      from_secret: port
-    script:
-      - bash updatePythonRepo.sh iheart-2-sp
-  when:
-    branch:
-      - master
+#---
+#kind: pipeline
+#type: docker
+#name: repo-update
+#
+#steps:
+#- name: ssh commands
+#  image: appleboy/drone-ssh
+#  settings:
+#    host:
+#      from_secret: host
+#    username:
+#      from_secret: ssh_username
+#    password:
+#      from_secret: ssh_password
+#    port:
+#      from_secret: port
+#    script:
+#      - bash updatePythonRepo.sh iheart-2-sp
+#  when:
+#    branch:
+#      - master
