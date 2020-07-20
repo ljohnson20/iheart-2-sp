@@ -2,6 +2,7 @@
 # Has no duplicates and pushes to spotify daily? maybe hourly?
 # Could also pull from website or list which might be easier
 
+import config
 import argparse
 import logging
 import os
@@ -32,7 +33,6 @@ if "spotify_username" and "spotify_client" and "spotify_secret" and "spotify_uri
     secret = os.environ.get(spotify_secret)
     uri = os.environ.get(spotify_uri)
 else:
-    import config
     username = config.spotify_username
     client = config.spotify_client
     secret = config.spotify_secret

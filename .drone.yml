@@ -1,27 +1,23 @@
 ---
 kind: pipeline
 type: docker
-name: python-3-3
+name: python-3-6
 
 steps:
 - name: tests
   image: python:3.6
-  environment:
-    spotify_username:
-      from_secret: spotify_username
-    spotify_client:
-      from_secret: spotify_client
-    spotify_secret:
-      from_secret: spotify_secret
-    spotify_uri:
-      from_secret: spotify_uri
-    iheart_url:
-      from_secret: iheart_url
-    spotify_playlist:
-      spotify_playlist: spotify_playlist
+  volumes:
+  - name: cache
+    path: /tmp/cache
   commands:
   - pip install -r requirements.txt
+  - cp /tmp/cache/test-config.py /drone/src/
   - pytest
+
+volumes:
+- name: cache
+  host:
+    path: /tests/iheart-2-sp
 
 trigger:
   branch:
@@ -32,27 +28,23 @@ trigger:
 ---
 kind: pipeline
 type: docker
-name: python-3-4
+name: python-3-7
 
 steps:
 - name: tests
   image: python:3.7
-  environment:
-    spotify_username:
-      from_secret: spotify_username
-    spotify_client:
-      from_secret: spotify_client
-    spotify_secret:
-      from_secret: spotify_secret
-    spotify_uri:
-      from_secret: spotify_uri
-    iheart_url:
-      from_secret: iheart_url
-    spotify_playlist:
-      spotify_playlist: spotify_playlist
+  volumes:
+  - name: cache
+    path: /tmp/cache
   commands:
   - pip install -r requirements.txt
+  - cp /tmp/cache/test-config.py /drone/src/
   - pytest
+
+volumes:
+- name: cache
+  host:
+    path: /tests/iheart-2-sp
 
 trigger:
   branch:
@@ -68,48 +60,21 @@ name: python-3-8
 steps:
 - name: tests
   image: python:3.8
-  environment:
-    spotify_username:
-      from_secret: spotify_username
-    spotify_client:
-      from_secret: spotify_client
-    spotify_secret:
-      from_secret: spotify_secret
-    spotify_uri:
-      from_secret: spotify_uri
-    iheart_url:
-      from_secret: iheart_url
-    spotify_playlist:
-      spotify_playlist: spotify_playlist
+  volumes:
+  - name: cache
+    path: /tmp/cache
   commands:
   - pip install -r requirements.txt
+  - cp /tmp/cache/test-config.py /drone/src/
   - pytest
+
+volumes:
+- name: cache
+  host:
+    path: /tests/iheart-2-sp
 
 trigger:
   branch:
     - master
   event:
     - push
-
-#---
-#kind: pipeline
-#type: docker
-#name: repo-update
-#
-#steps:
-#- name: ssh commands
-#  image: appleboy/drone-ssh
-#  settings:
-#    host:
-#      from_secret: host
-#    username:
-#      from_secret: ssh_username
-#    password:
-#      from_secret: ssh_password
-#    port:
-#      from_secret: port
-#    script:
-#      - bash updatePythonRepo.sh iheart-2-sp
-#  when:
-#    branch:
-#      - master

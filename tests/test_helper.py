@@ -22,3 +22,8 @@ def test_find_api_url():
 
 def test_fail_api_url():
     assert not helper.api_url_find("https://www.iheart.com/lpn02")
+
+
+def test_search_spotify():
+    track_id, artists, name, popularity = helper.search_spotify("rick astley", "never gonna give you up")
+    assert track_id == '7GhIk7Il098yCjg4BQjzvb'
