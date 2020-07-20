@@ -78,3 +78,23 @@ trigger:
     - master
   event:
     - push
+
+---
+kind: pipeline
+type: exec
+name: deploy
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: deploy
+  commands:
+    - bash /home/updatePythonRepo.sh iheart-2-sp
+
+trigger:
+  event:
+  - promote
+  target:
+  - production
