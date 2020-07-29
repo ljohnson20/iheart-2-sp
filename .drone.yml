@@ -74,7 +74,7 @@ steps:
     token:
       from_secret: codecov_token
     files:
-      - *.xml
+      - coverage.xml
 
 volumes:
 - name: cache
