@@ -10,6 +10,7 @@ import time
 import requests
 import helper
 import spotipy
+import sys
 import json
 
 
@@ -56,7 +57,7 @@ if not token:
     token = oauth.get_access_token(code=oauth.get_auth_response())
     print("Also paste redirect url in config under spotify_url")
 else:
-    token = spotipy.util.prompt_for_user_token(username, scope, client, secret, spotify_uri)
+    token = spotipy.util.prompt_for_user_token(username, scope, client, secret, uri)
 
 # https://developer.spotify.com/documentation/web-api/reference/
 
@@ -84,22 +85,33 @@ try:
         sp.trace = False
 
         # TODO - Monitor multiple urls at once?
-        url = os.environ.get('iheart_url')
+        if "iheart_url" in os.environ:
+            print("Looking for url in environmental var")
+            url = os.environ.get('iheart_url')
+        else:
+            print("Looking for url in config")
+            url = config.iheart_url
+
         if args.url:
             url = args.url
-
+        print(f'Sending {url} to helper')
         api_url = helper.api_url_find(url)
+        print(api_url)
+        if not api_url:
+            logging.warning("No URL for iHeart radio station provided. Please create iheart_url environmental variable "
+                            "or add to config")
+            sys.exit()
 
-        playlist_cont = helper.current_playlist_tracks()
+        playlist_cont = helper.current_playlist_tracks(sp, playlist_id)
 
         if len(playlist_cont) > args.limit > 0:
-            helper.clear_playlist()
+            helper.clear_playlist(sp, playlist_id)
             logging.warning(f'Playlist over {args.limit} songs! Clearing out and starting fresh')
 
         logging.info('Starting iHeart Radio listener')
         # TODO - What is better while loop or cron tab? Can python edit cron tab?
         while True:
-            token = spotipy.util.prompt_for_user_token(username, scope, client, secret, spotify_uri)
+            token = spotipy.util.prompt_for_user_token(username, scope, client, secret, uri)
             sp = spotipy.Spotify(auth=token)
 
             r = requests.get(api_url)
@@ -114,7 +126,7 @@ try:
                     track = helper.clean_string(content['title'])
                     artist = helper.clean_string(content['artist'], False)
 
-                    track_id, artists, name, popularity = helper.search_spotify(artist, track)
+                    track_id, artists, name, popularity = helper.search_spotify(sp, artist, track)
 
                     if not track_id:
                         logging.warning(f"FAILED SPOTIFY SEARCH = Artist:{artist} Track:{track}")
@@ -129,7 +141,7 @@ try:
                             logging.info("-------------------------------------------------------------")
                         else:
                             playlist_cont.append(track_id)
-                            helper.add_track([track_id])
+                            helper.add_track(sp, playlist_id, [track_id])
                             logging.info("Song has been added to the playlist")
                             logging.info("-------------------------------------------------------------")
                 except Exception as e:

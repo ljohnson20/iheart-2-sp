@@ -5,30 +5,8 @@ import requests
 import spotipy
 import os
 
-# TODO - Maybe pass variables all from station_listener don't set them up here?
-# Variable set up
-scope = "user-library-read, playlist-modify-public"
-if "spotify_username" and "spotify_client" and "spotify_secret" and "spotify_uri" in os.environ:
-    username = os.environ.get(spotify_username)
-    client = os.environ.get(spotify_client)
-    secret = os.environ.get(spotify_secret)
-    uri = os.environ.get(spotify_uri)
-else:
-    username = config.spotify_username
-    client = config.spotify_client
-    secret = config.spotify_secret
-    uri = config.spotify_uri
 
-if "spotify_playlist" in os.environ:
-    playlist_id = os.environ.get(spotify_playlist)
-else:
-    playlist_id = config.spotify_playlist
-
-
-def current_playlist_tracks():
-    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client, client_secret=secret,
-                                               redirect_uri=uri)
-    sp = spotipy.Spotify(auth=token)
+def current_playlist_tracks(sp: spotipy.client.Spotify, playlist_id: str):
     playlist_cont = []
     # Getting current songs in playlist to add to list for no duplicates
     results = sp.playlist_tracks(playlist_id=playlist_id)
@@ -39,11 +17,7 @@ def current_playlist_tracks():
     return playlist_cont
 
 
-def clear_playlist():
-    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client, client_secret=secret,
-                                               redirect_uri=uri)
-    sp = spotipy.Spotify(auth=token)
-
+def clear_playlist(sp: spotipy.client.Spotify, playlist_id: str):
     playlist_cont = current_playlist_tracks()
     with open(f'playlist_cont_{dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.txt', 'w') as f:
         for track_id in playlist_cont:
@@ -65,11 +39,7 @@ def read_playlist_file(file: str):
 
 
 # TODO - May need to account for songs with remix in name
-def search_spotify(artist: str, track: str):
-    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client, client_secret=secret,
-                                               redirect_uri=uri)
-    sp = spotipy.Spotify(auth=token)
-
+def search_spotify(sp: spotipy.client.Spotify, artist: str, track: str):
     track_id = None
     artists = None
     name = None
@@ -84,11 +54,7 @@ def search_spotify(artist: str, track: str):
     return track_id, artists, name, popularity
 
 
-def add_track(track_id: list):
-    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client, client_secret=secret,
-                                               redirect_uri=uri)
-    sp = spotipy.Spotify(auth=token)
-
+def add_track(sp: spotipy.client.Spotify, playlist_id: str, track_id: list):
     sp.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
     return 0
 
@@ -111,12 +77,13 @@ def clean_string(string: str, remove_extra: bool = True):
 
 # Used to get api url from base iHeart Radio station url
 def api_url_find(iheart_url: str):
-    main = requests.get(iheart_url)
-    if main.status_code == 200:
-        split = main.text[main.text.find("@id"):main.text.find("@type", main.text.find("@id"))].split('"')[2].split("/")
-        if len(split) != 0:
-            live = split[2].split("/")
-            if len(live) != 0:
-                api_url = "https://us.api.iheart.com/api/v3/live-meta/stream/" + live[-1] + "/currentTrackMeta"
-                return api_url
+    if iheart_url:
+        main = requests.get(iheart_url)
+        if main.status_code == 200:
+            split = main.text[main.text.find("@id"):main.text.find("@type", main.text.find("@id"))].split('"')[2].split("/")
+            if len(split) != 0:
+                live = split[2].split("/")
+                if len(live) != 0:
+                    api_url = "https://us.api.iheart.com/api/v3/live-meta/stream/" + live[-1] + "/currentTrackMeta"
+                    return api_url
     return None
