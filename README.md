@@ -1,5 +1,7 @@
 [![Build Status](https://drone.lokyra.org/api/badges/ljohnson20/iheart-2-sp/status.svg?ref=refs/heads/master)](https://drone.lokyra.org/ljohnson20/iheart-2-sp) 
 [![codecov](https://codecov.io/gh/ljohnson20/iheart-2-sp/branch/master/graph/badge.svg)](https://codecov.io/gh/ljohnson20/iheart-2-sp)
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 
 Script that monitors a iHeart radio station and automatically adds the song to Spotify playlist.
 
