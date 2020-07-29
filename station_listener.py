@@ -122,25 +122,25 @@ try:
                                      f"ID: {track_id}")
                         if track_id in playlist_cont:
                             logging.info("Song is already in playlist")
-                            logging.info("--------------------------------------------------------------")
+                            logging.info("-------------------------------------------------------------")
                         elif popularity < 60:
                             logging.info(f"Low song popularity ({popularity}) not added to playlist")
-                            logging.info("--------------------------------------------------------------")
+                            logging.info("-------------------------------------------------------------")
                         else:
                             playlist_cont.append(track_id)
                             helper.add_track([track_id])
                             logging.info("Song has been added to the playlist")
-                            logging.info("--------------------------------------------------------------")
+                            logging.info("-------------------------------------------------------------")
                 except Exception as e:
                     logging.warning(f'SPOTIFY SEARCH = artist:{artist} track:{track}')
                     logging.warning(f"RESULTS = {item}")
                     logging.exception("Exception occurred")
             elif r.status_code == 204:
                 logging.info('Radio station is currently playing an ad')
-                logging.info('--------------------------------------------------------------')
+                logging.info('-------------------------------------------------------------')
             else:
                 logging.warning(f"Unknown error code {r.status_code} for {api_url}")
-                logging.info('--------------------------------------------------------------')
+                logging.info('-------------------------------------------------------------')
             time.sleep(100)
     else:
         logging.error("Could not get token")
