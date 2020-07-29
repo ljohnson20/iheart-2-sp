@@ -66,7 +66,15 @@ steps:
   commands:
   - pip install -r requirements.txt
   - cp /tmp/cache/test-config.py /drone/src/config.py
-  - pytest
+  - coverage run -m pytest
+  - coverage xml
+- name: coverage
+  image: plugins/codecov
+  settings:
+    token:
+      from_secret: codecov_token
+    files:
+      - *.xml
 
 volumes:
 - name: cache
@@ -78,13 +86,7 @@ trigger:
     - master
   event:
     - push
-    
----
-pipeline:
-  codecov:
-    image: robertstettner/drone-codecov
-    token: [ codecov_token ]
-    
+
 ---
 kind: pipeline
 type: exec
