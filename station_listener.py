@@ -48,7 +48,8 @@ else:
 playlist_cont = []
 
 # Spotify API set up
-oauth = spotipy.oauth2.SpotifyOAuth(username, scope, client, secret, "https://www.google.com/")
+oauth = spotipy.oauth2.SpotifyOAuth(username=username, scope=scope, client_id=client, client_secret=secret,
+                                    redirect_uri="https://www.google.com/")
 token = oauth.get_cached_token()
 if not token:
     print(f"Copy/paste following link into a browser if it does not auto-open:\n{oauth.get_authorize_url()}")

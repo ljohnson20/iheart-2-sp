@@ -26,7 +26,8 @@ else:
 
 
 def current_playlist_tracks():
-    token = spotipy.util.prompt_for_user_token(username, scope, client, secret, uri)
+    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client, client_secret=secret,
+                                               redirect_uri=uri)
     sp = spotipy.Spotify(auth=token)
     playlist_cont = []
     # Getting current songs in playlist to add to list for no duplicates
@@ -39,7 +40,8 @@ def current_playlist_tracks():
 
 
 def clear_playlist():
-    token = spotipy.util.prompt_for_user_token(username, scope, client, secret, uri)
+    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client, client_secret=secret,
+                                               redirect_uri=uri)
     sp = spotipy.Spotify(auth=token)
 
     playlist_cont = current_playlist_tracks()
@@ -64,7 +66,8 @@ def read_playlist_file(file: str):
 
 # TODO - May need to account for songs with remix in name
 def search_spotify(artist: str, track: str):
-    token = spotipy.util.prompt_for_user_token(username, scope, client, secret, uri)
+    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client, client_secret=secret,
+                                               redirect_uri=uri)
     sp = spotipy.Spotify(auth=token)
 
     track_id = None
@@ -82,7 +85,8 @@ def search_spotify(artist: str, track: str):
 
 
 def add_track(track_id: list):
-    token = spotipy.util.prompt_for_user_token(username, scope, client, secret, uri)
+    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client, client_secret=secret,
+                                               redirect_uri=uri)
     sp = spotipy.Spotify(auth=token)
 
     sp.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
