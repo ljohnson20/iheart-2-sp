@@ -78,7 +78,13 @@ trigger:
     - master
   event:
     - push
-
+    
+---
+pipeline:
+  codecov:
+    image: robertstettner/drone-codecov
+    token: [ codecov_token ]
+    
 ---
 kind: pipeline
 type: exec
