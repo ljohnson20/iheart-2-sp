@@ -38,14 +38,24 @@ def read_playlist_file(file: str):
         return 1
 
 
-# TODO - May need to account for songs with remix in name
+# TODO - Try multipule specific searches and take one with highest popularity? Might help to avoid duplicates
 def search_spotify(sp: spotipy.client.Spotify, artist: str, track: str):
     track_id = None
     artists = None
     name = None
     popularity = None
 
-    results = sp.search(q=f"artist:{artist} track:{track} NOT Live NOT Remix", type='track', limit=1)
+    results = sp.search(q=f"artist:{artist} track:{track} NOT Live", type='track', limit=1)
+
+    if results['tracks']['total'] == 0:
+        artist = clean_string(artist)
+        results = sp.search(q=f"artist:{artist} track:{track} NOT Live", type='track', limit=1)
+        if results['tracks']['total'] == 0:
+            artist = artist.split(' ')
+            if len(artist) > 1:
+                artist = artist[0] + ' ' + artist[1]
+                results = sp.search(q=f"artist:{artist} track:{track} NOT Live", type='track', limit=1)
+
     if results['tracks']['total'] != 0:
         track_id = results['tracks']['items'][0]['id']
         artists = results['tracks']['items'][0]['artists']
@@ -54,21 +64,21 @@ def search_spotify(sp: spotipy.client.Spotify, artist: str, track: str):
     return track_id, artists, name, popularity
 
 
-def add_track(sp: spotipy.client.Spotify, playlist_id: str, track_id: list):
+def add_track(sp: spotipy.client.Spotify, username: str, playlist_id: str, track_id: list):
     sp.user_playlist_add_tracks(user=username, playlist_id=playlist_id, tracks=track_id)
     return 0
 
-# TODO - Need to remove duplicates using fuzzy string match
+# TODO - Need to remove/check duplicates using fuzzy string match and matching artists. Take higher popularity?
 # TODO - Remove unpopular songs
 
 
 # Used for doctering up the track and artist name for searching
-def clean_string(string: str, remove_extra: bool = True):
-    removal = ['the', 'feat', 'feat.', 'featuring']
-    if remove_extra:
-        temp = re.sub('[  ]+', ' ', re.sub(r"[^A-Za-z0-9$ñ&\. -]+", '', string.lower()))
+def clean_string(string: str, is_track: bool = True):
+    removal = ['the', 'edit', 'with', 'x', 'feat', 'remix', 'feat.', 'featuring']
+    if is_track:
+        temp = re.sub('[  ]+', ' ', re.sub(r"[^A-Za-z0-9$ñé&\. -]+", '', string.lower()))
     else:
-        temp = re.sub('[  ]+', ' ', re.sub(r"[^A-Za-z0-9ñ&$\. -]+", '', string.lower()))
+        temp = re.sub('[  ]+', ' ', re.sub(r"[^A-Za-z0-9ñ$\. -]+", '', string.lower()))
     temp = temp.split()
     fixed = [word for word in temp if word not in removal]
     doctored = ' '.join(fixed)

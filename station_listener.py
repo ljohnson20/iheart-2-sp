@@ -57,7 +57,8 @@ if not token:
     token = oauth.get_access_token(code=oauth.get_auth_response())
     print("Also paste redirect url in config under spotify_url")
 else:
-    token = spotipy.util.prompt_for_user_token(username, scope, client, secret, uri)
+    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client, client_secret=secret,
+                                               redirect_uri=uri)
 
 # https://developer.spotify.com/documentation/web-api/reference/
 
@@ -111,14 +112,18 @@ try:
         logging.info('Starting iHeart Radio listener')
         # TODO - What is better while loop or cron tab? Can python edit cron tab?
         while True:
-            token = spotipy.util.prompt_for_user_token(username, scope, client, secret, uri)
+            token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client,
+                                                       client_secret=secret,
+                                                       redirect_uri=uri)
             sp = spotipy.Spotify(auth=token)
 
             r = requests.get(api_url)
             if r.status_code == 200:
                 artist = None
+                artists = None
                 track = None
-                item = None
+                track_id = None
+                name = None
 
                 try:
                     content = json.loads(r.text)
@@ -141,12 +146,13 @@ try:
                             logging.info("-------------------------------------------------------------")
                         else:
                             playlist_cont.append(track_id)
-                            helper.add_track(sp, playlist_id, [track_id])
+                            helper.add_track(sp, username, playlist_id, [track_id])
                             logging.info("Song has been added to the playlist")
                             logging.info("-------------------------------------------------------------")
                 except Exception as e:
                     logging.warning(f'SPOTIFY SEARCH = artist:{artist} track:{track}')
-                    logging.warning(f"RESULTS = {item}")
+                    logging.warning(f"RESULTS = {track_id} - artist:{','.join([artist['name'] for artist in artists])} "
+                                    f"track: {name}")
                     logging.exception("Exception occurred")
             elif r.status_code == 204:
                 logging.info('Radio station is currently playing an ad')

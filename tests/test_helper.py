@@ -11,7 +11,7 @@ def test_artist_clean_string():
 
 
 def test_less_clean_string():
-    assert helper.clean_string('A$AP Rocky & Kid Cudi', False) == "a$ap rocky & kid cudi"
+    assert helper.clean_string('A$AP Rocky & Kid Cudi', False) == "a$ap rocky kid cudi"
 
 
 def test_find_api_url():
